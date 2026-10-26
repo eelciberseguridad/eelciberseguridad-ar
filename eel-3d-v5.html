@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#01050d">
+  <meta name="referrer" content="no-referrer">
+  <title>EEL CIBERSEGURIDAD</title>
+  <!-- V5: screen-fixed title and stabilized 3D tracking -->
+  <script src="vendor/aframe.min.js"></script>
+  <script src="vendor/mindar-image-aframe.prod.js"></script>
+  <style>
+    *{box-sizing:border-box}
+    html,body{width:100%;height:100%;margin:0;overflow:hidden;background:#01050d}
+    body{font-family:Arial,Helvetica,sans-serif;color:#f1fcff}
+    a-scene,.a-canvas{position:fixed!important;inset:0;width:100%!important;height:100%!important}
+    .a-enter-vr-button,.a-enter-ar-button,.mindar-ui-overlay{display:none!important}
+    .viewfinder{position:fixed;z-index:21;top:50%;left:50%;width:min(58vw,290px);height:min(58vw,290px);transform:translate(-50%,-50%);pointer-events:none;opacity:.65;transition:opacity .45s}
+    .viewfinder i{position:absolute;width:24px;height:24px;border-color:rgba(133,229,255,.72);border-style:solid;filter:drop-shadow(0 0 9px rgba(73,189,255,.28))}
+    .viewfinder i:nth-child(1){left:0;top:0;border-width:2px 0 0 2px}
+    .viewfinder i:nth-child(2){right:0;top:0;border-width:2px 2px 0 0}
+    .viewfinder i:nth-child(3){left:0;bottom:0;border-width:0 0 2px 2px}
+    .viewfinder i:nth-child(4){right:0;bottom:0;border-width:0 2px 2px 0}
+    body.found .viewfinder{opacity:0}
+    #brand{
+      position:fixed;z-index:45;pointer-events:none;
+      left:50%;top:calc(env(safe-area-inset-top,0px) + 13vh);bottom:auto;
+      transform:translate(-50%,25px) scale(.92);
+      width:min(91vw,560px);padding:14px 12px 16px;text-align:center;
+      opacity:0;visibility:hidden;
+      transition:opacity .44s ease,transform .58s cubic-bezier(.15,.8,.2,1),visibility .44s;
+      filter:drop-shadow(0 0 18px rgba(9,138,240,.45));
+    }
+    body.found #brand{opacity:1;visibility:visible;transform:translate(-50%,0) scale(1)}
+    #brand .plate{position:absolute;inset:0;border:1px solid rgba(63,191,255,.43);border-radius:8px;
+      background:linear-gradient(120deg,rgba(1,8,22,.90),rgba(3,27,50,.88) 49%,rgba(1,8,22,.92));
+      box-shadow:0 10px 36px rgba(0,0,0,.48),inset 0 0 22px rgba(21,114,198,.22),0 0 28px rgba(0,145,255,.20)}
+    #brand .plate:after{content:"";position:absolute;left:6%;right:6%;bottom:4px;height:2px;
+      background:linear-gradient(90deg,transparent,#6ee7ff,transparent);box-shadow:0 0 17px rgba(83,206,255,.9)}
+    #brand .name{position:relative;display:inline-block;white-space:nowrap;font-size:clamp(16px,4.35vw,29px);font-weight:900;letter-spacing:.10em;
+      color:#e9fcff;text-shadow:0 0 2px #e6faff,0 0 12px rgba(76,207,255,.88),0 0 30px rgba(8,120,255,.8);}
+    #brand .name:after{content:"";position:absolute;inset:0;
+      background:linear-gradient(105deg,transparent 26%,rgba(255,255,255,.96) 48%,transparent 66%);
+      mix-blend-mode:screen;transform:translateX(-125%);opacity:.42;
+      animation:titleSweep 4.8s ease-in-out infinite;}
+    @keyframes titleSweep{0%,24%{transform:translateX(-125%);opacity:0}30%{opacity:.55}55%{transform:translateX(125%);opacity:0}100%{opacity:0}}
+    #error{position:fixed;z-index:60;bottom:calc(env(safe-area-inset-bottom,0px) + 25px);left:50%;transform:translateX(-50%);
+      width:min(92vw,540px);padding:15px;border:1px solid rgba(255,135,135,.45);border-radius:12px;
+      color:#fff;background:rgba(39,9,17,.93);text-align:center;font:14px/1.5 Arial;}
+    #error[hidden]{display:none!important}
+    @media(prefers-reduced-motion:reduce){#brand .name:after{animation:none}}
+  </style>
+
+  <script>
+  // World-space smoothing for the MindAR image-target transform.
+  // The tracker is invisible; only a stabilized copy is rendered.
+  AFRAME.registerComponent('eel-stabilizer', {
+    schema: { target: {type:'selector'} },
+    init() {
+      this.enabledTracking = false;
+      this.initializedPose = false;
+      this.rawPosition = new AFRAME.THREE.Vector3();
+      this.rawQuaternion = new AFRAME.THREE.Quaternion();
+      this.rawScale = new AFRAME.THREE.Vector3();
+      this.el.object3D.visible = false;
+    },
+    activate() {
+      this.enabledTracking = true;
+      this.initializedPose = false;
+      this.el.object3D.visible = false;
+    },
+    deactivate() {
+      this.enabledTracking = false;
+      this.initializedPose = false;
+      this.el.object3D.visible = false;
+    },
+    tick(time, dt) {
+      if (!this.enabledTracking || !this.data.target) return;
+      const source = this.data.target.object3D;
+      const dest = this.el.object3D;
+      source.updateWorldMatrix(true, false);
+      source.getWorldPosition(this.rawPosition);
+      source.getWorldQuaternion(this.rawQuaternion);
+      source.getWorldScale(this.rawScale);
+      if (![this.rawPosition.x,this.rawPosition.y,this.rawPosition.z,
+            this.rawQuaternion.x,this.rawQuaternion.y,this.rawQuaternion.z,
+            this.rawQuaternion.w].every(Number.isFinite)) return;
+      if (!this.initializedPose) {
+        dest.position.copy(this.rawPosition);
+        dest.quaternion.copy(this.rawQuaternion);
+        dest.scale.copy(this.rawScale);
+        this.initializedPose = true;
+        dest.visible = true;
+        return;
+      }
+      const step = Math.min(Math.max(dt || 16.7, 1), 75);
+      const displacement = dest.position.distanceTo(this.rawPosition);
+      // Small movements are smoothed more strongly; deliberate panning follows faster.
+      const positionTau = displacement > 0.10 ? 105 : 215;
+      const ap = 1 - Math.exp(-step / positionTau);
+      const ar = 1 - Math.exp(-step / 255);
+      dest.position.lerp(this.rawPosition, ap);
+      dest.quaternion.slerp(this.rawQuaternion, ar);
+      dest.scale.lerp(this.rawScale, ap);
+      dest.updateMatrixWorld(true);
+    }
+  });
+  </script>
+</head>
+<body>
+  <!-- No branding is visible before recognition. The only text in the experience is EEL CIBERSEGURIDAD. -->
+  <div class="viewfinder" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+  <div id="brand" aria-hidden="true"><div class="plate"></div><span class="name">EEL CIBERSEGURIDAD</span></div>
+  <div id="error" role="alert" hidden></div>
+
+  <a-scene id="scene"
+    mindar-image="imageTargetSrc: assets/target.mind; autoStart: true; uiLoading: false; uiScanning: false; uiError: false; filterMinCF: 0.0005; filterBeta: 0.025; warmupTolerance: 7; missTolerance: 14; maxTrack: 1"
+    color-space="sRGB"
+    renderer="colorManagement: true; physicallyCorrectLights: true; antialias: true; alpha: true"
+    vr-mode-ui="enabled: false"
+    device-orientation-permission-ui="enabled: false"
+    embedded>
+
+    <a-assets timeout="16000">
+      <a-asset-item id="eelModel" src="assets/eel_hacker_relief_v4.glb"></a-asset-item>
+      <img id="backPhoto" src="assets/eel_background_v4.png">
+      <img id="electric" src="assets/coat-electric.png">
+      <img id="flare" src="assets/eel_flare_v4.png">
+      <img id="scanTexture" src="assets/scan-beam.png">
+    </a-assets>
+
+    <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+    <a-light type="ambient" intensity="1.2" color="#bcdfff"></a-light>
+    <a-light type="directional" position="-0.4 0.7 1.2" intensity="1.5" color="#ebfaff"></a-light>
+    <a-light type="point" position="0.4 -0.22 0.8" intensity="1.15" color="#4dbfff" distance="2.8" decay="1.3"></a-light>
+
+    <a-entity id="target" mindar-image-target="targetIndex:0"></a-entity>
+    <a-entity id="visualRig" eel-stabilizer="target: #target">
+      <a-entity id="sculpt" scale="0.8 0.8 0.8"
+        animation__arrive="property:scale;from:0.82 0.82 0.82;to:1 1 1;dur:800;easing:easeOutCubic;startEvents:eel-appear">
+
+        <!-- Medallion: real cylindrical side depth, marker-sized. -->
+        <a-cylinder radius="0.505" height="0.10" segments-radial="100" rotation="90 0 0" position="0 0 0.028"
+          material="color:#051222;metalness:0.78;roughness:0.24;emissive:#052848;emissiveIntensity:0.23"></a-cylinder>
+        <a-circle radius="0.502" segments="100" position="0 0 0.083" src="#backPhoto"
+          material="shader:flat;transparent:true;side:double;depthWrite:false"></a-circle>
+
+        <!-- Actual high-relief GLB: textured hoodie with curved front and side walls. -->
+        <a-entity id="hackerFloat" position="0 0 0.015" rotation="0 -3 0"
+          animation__turn="property:rotation;from:0 -3 0;to:0 3 0;dur:12000;dir:alternate;loop:true;easing:easeInOutSine">
+          <a-entity id="hackerModel" gltf-model="#eelModel" position="0 0 0"></a-entity>
+
+          <!-- Electric tracery moves WITH the 3D character to reveal its depth. -->
+          <a-plane width="1" height="1" src="#electric" position="0 0 0.295"
+            material="shader:flat;transparent:true;opacity:0.18;side:double;depthWrite:false"
+            animation__electric="property:material.opacity;from:0.07;to:0.40;dur:2500;loop:true;dir:alternate;easing:easeInOutSine"></a-plane>
+        </a-entity>
+
+        <!-- Metallic rim with real depth, slow secondary orbit at another Z-plane. -->
+        <a-torus radius="0.509" radius-tubular="0.009" segments-tubular="96" position="0 0 0.120"
+          material="color:#7cddff;metalness:0.8;roughness:0.16;emissive:#32b6ff;emissiveIntensity:0.6"></a-torus>
+        <a-torus radius="0.550" radius-tubular="0.0021" segments-tubular="100" position="0 0 0.185" rotation="0 10 0"
+          material="shader:flat;color:#5fd5ff;transparent:true;opacity:0.58"
+          animation__spin="property:rotation;to:6 360 -6;dur:35000;loop:true;easing:linear"></a-torus>
+        <a-ring radius-inner="0.572" radius-outer="0.576" theta-start="15" theta-length="155" position="0 0 0.184"
+          material="shader:flat;color:#a3f2ff;transparent:true;opacity:0.36;side:double;depthWrite:false"
+          animation__spin="property:rotation;to:0 0 -360;dur:32000;loop:true;easing:linear"></a-ring>
+
+        <!-- Scan the hacker; moving light is NOT the whole scene. -->
+        <a-plane src="#scanTexture" width="0.83" height="0.15" position="0 -0.38 0.34"
+          material="shader:flat;transparent:true;opacity:0.36;depthWrite:false;side:double"
+          animation__scan="property:position;from:0 -0.40 0.34;to:0 0.43 0.34;dur:4900;loop:true;easing:linear"></a-plane>
+
+        <!-- Four subtle data beacons in volumetric space. -->
+        <a-entity animation__orbit="property:rotation;to:0 0 360;dur:15000;loop:true;easing:linear">
+          <a-sphere radius="0.009" position="0 0.545 0.23" material="shader:flat;color:#e3faff"></a-sphere>
+          <a-sphere radius="0.006" position="-0.38 -0.395 0.22" material="shader:flat;color:#65d8ff"></a-sphere>
+        </a-entity>
+        <a-entity animation__orbit="property:rotation;to:0 0 -360;dur:21000;loop:true;easing:linear">
+          <a-sphere radius="0.007" position="0.46 0.31 0.22" material="shader:flat;color:#9feaff"></a-sphere>
+          <a-sphere radius="0.006" position="-0.31 0.43 0.22" material="shader:flat;color:#5dc9ff"></a-sphere>
+        </a-entity>
+
+        <!-- Finger-touch hologram: two rings in different planes, expanding soft core. -->
+        <a-entity position="-0.135 -0.047 0.38">
+          <a-torus radius="0.075" radius-tubular="0.002" segments-tubular="60"
+            material="shader:flat;color:#66dfff;transparent:true;opacity:0.8"
+            animation__pulse="property:scale;from:0.88 0.88 0.88;to:1.18 1.18 1.18;dur:2300;loop:true;dir:alternate;easing:easeInOutSine"></a-torus>
+          <a-torus radius="0.045" radius-tubular="0.0015" segments-tubular="60" rotation="65 23 0"
+            material="shader:flat;color:#c3faff;transparent:true;opacity:0.56"
+            animation__spin="property:rotation;to:0 360 100;dur:9000;loop:true;easing:linear"></a-torus>
+          <a-sphere radius="0.011"
+            material="shader:flat;color:#dffaff;transparent:true;opacity:0.92"
+            animation__pulse="property:scale;from:0.8 0.8 0.8;to:1.26 1.26 1.26;dur:2000;loop:true;dir:alternate;easing:easeInOutSine"></a-sphere>
+        </a-entity>
+
+        <!-- Moving highlights along hood and sleeve -->
+        <a-plane src="#flare" position="-0.230 0.200 0.36" width="0.16" height="0.16"
+          material="shader:flat;transparent:true;opacity:0.22;depthWrite:false"
+          animation__flash="property:material.opacity;from:0.08;to:0.46;dur:2200;loop:true;dir:alternate;easing:easeInOutSine"></a-plane>
+        <a-plane src="#flare" position="0.280 -0.155 0.35" width="0.13" height="0.13"
+          material="shader:flat;transparent:true;opacity:0.26;depthWrite:false"
+          animation__flash="property:material.opacity;from:0.07;to:0.43;dur:3100;loop:true;dir:alternate;easing:easeInOutSine"></a-plane>
+        <a-plane src="#flare" position="0.10 0.40 0.34" width="0.08" height="0.08"
+          material="shader:flat;transparent:true;opacity:0.23;depthWrite:false"
+          animation__flash="property:material.opacity;from:0.03;to:0.33;dur:3900;loop:true;dir:alternate;easing:easeInOutSine"></a-plane>
+      </a-entity>
+    </a-entity>
+  </a-scene>
+
+  <script>
+  (()=>{
+    'use strict';
+    const target=document.getElementById('target');
+    const scene=document.getElementById('scene');
+    const error=document.getElementById('error');
+    const brand=document.getElementById('brand');
+    const visual=document.getElementById('visualRig');
+    const smoothing=()=>visual && visual.components['eel-stabilizer'];
+    let lostTimer=null;
+    let modelReady=false;
+    const showError=s=>{error.textContent=s;error.hidden=false;};
+    const clearError=()=>{error.textContent='';error.hidden=true;};
+    const found=()=>{
+      if(lostTimer){clearTimeout(lostTimer);lostTimer=null;}
+      const controller=smoothing();
+      if (controller && !controller.enabledTracking) controller.activate();
+      document.body.classList.add('found');
+      brand.setAttribute('aria-hidden','false');
+      document.getElementById('sculpt').emit('eel-appear');
+      clearError();
+    };
+    const lost=()=>{
+      if(lostTimer)clearTimeout(lostTimer);
+      // Briefly retain the last stable pose through intermittent tracking dropouts.
+      lostTimer=setTimeout(()=>{
+        const controller=smoothing();
+        if(controller)controller.deactivate();
+        document.body.classList.remove('found');
+        brand.setAttribute('aria-hidden','true');
+      },950);
+    };
+    target.addEventListener('targetFound',found);
+    target.addEventListener('targetLost',lost);
+    document.getElementById('hackerModel').addEventListener('model-loaded',()=>{modelReady=true;clearError();});
+    document.getElementById('hackerModel').addEventListener('model-error',()=>showError('No se pudo cargar el modelo 3D. Verificá assets/eel_hacker_relief_v4.glb.'));
+    scene.addEventListener('arError',()=>showError('No se pudo iniciar la cámara o leer el marcador.'));
+    scene.addEventListener('arReady',()=>{if(modelReady)clearError();});
+    fetch('assets/target.mind',{method:'HEAD',cache:'no-store'})
+      .then(r=>{if(!r.ok)showError('Falta assets/target.mind en GitHub.');})
+      .catch(()=>{});
+    window.addEventListener('pagehide',()=>{
+      if(lostTimer)clearTimeout(lostTimer);
+      const controller=smoothing(); if(controller)controller.deactivate();
+      const sys=scene.systems&&scene.systems['mindar-image-system'];
+      if(sys){try{sys.stop()}catch(_){}}
+    });
+  })();
+  </script>
+</body>
+</html>

@@ -6,6 +6,7 @@
   <meta name="theme-color" content="#01050d">
   <meta name="referrer" content="no-referrer">
   <title>EEL CIBERSEGURIDAD</title>
+  <!-- V5: screen-fixed title and stabilized 3D tracking -->
   <script src="vendor/aframe.min.js"></script>
   <script src="vendor/mindar-image-aframe.prod.js"></script>
   <style>
@@ -23,9 +24,9 @@
     body.found .viewfinder{opacity:0}
     #brand{
       position:fixed;z-index:45;pointer-events:none;
-      left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 15vh);
+      left:50%;top:calc(env(safe-area-inset-top,0px) + 13vh);bottom:auto;
       transform:translate(-50%,25px) scale(.92);
-      width:min(94vw,680px);padding:16px 12px 18px;text-align:center;
+      width:min(91vw,560px);padding:14px 12px 16px;text-align:center;
       opacity:0;visibility:hidden;
       transition:opacity .44s ease,transform .58s cubic-bezier(.15,.8,.2,1),visibility .44s;
       filter:drop-shadow(0 0 18px rgba(9,138,240,.45));
@@ -36,7 +37,7 @@
       box-shadow:0 10px 36px rgba(0,0,0,.48),inset 0 0 22px rgba(21,114,198,.22),0 0 28px rgba(0,145,255,.20)}
     #brand .plate:after{content:"";position:absolute;left:6%;right:6%;bottom:4px;height:2px;
       background:linear-gradient(90deg,transparent,#6ee7ff,transparent);box-shadow:0 0 17px rgba(83,206,255,.9)}
-    #brand .name{position:relative;display:inline-block;white-space:nowrap;font-size:clamp(15px,4.4vw,31px);font-weight:900;letter-spacing:.10em;
+    #brand .name{position:relative;display:inline-block;white-space:nowrap;font-size:clamp(16px,4.35vw,29px);font-weight:900;letter-spacing:.10em;
       color:#e9fcff;text-shadow:0 0 2px #e6faff,0 0 12px rgba(76,207,255,.88),0 0 30px rgba(8,120,255,.8);}
     #brand .name:after{content:"";position:absolute;inset:0;
       background:linear-gradient(105deg,transparent 26%,rgba(255,255,255,.96) 48%,transparent 66%);
@@ -49,6 +50,62 @@
     #error[hidden]{display:none!important}
     @media(prefers-reduced-motion:reduce){#brand .name:after{animation:none}}
   </style>
+
+  <script>
+  // World-space smoothing for the MindAR image-target transform.
+  // The tracker is invisible; only a stabilized copy is rendered.
+  AFRAME.registerComponent('eel-stabilizer', {
+    schema: { target: {type:'selector'} },
+    init() {
+      this.enabledTracking = false;
+      this.initializedPose = false;
+      this.rawPosition = new AFRAME.THREE.Vector3();
+      this.rawQuaternion = new AFRAME.THREE.Quaternion();
+      this.rawScale = new AFRAME.THREE.Vector3();
+      this.el.object3D.visible = false;
+    },
+    activate() {
+      this.enabledTracking = true;
+      this.initializedPose = false;
+      this.el.object3D.visible = false;
+    },
+    deactivate() {
+      this.enabledTracking = false;
+      this.initializedPose = false;
+      this.el.object3D.visible = false;
+    },
+    tick(time, dt) {
+      if (!this.enabledTracking || !this.data.target) return;
+      const source = this.data.target.object3D;
+      const dest = this.el.object3D;
+      source.updateWorldMatrix(true, false);
+      source.getWorldPosition(this.rawPosition);
+      source.getWorldQuaternion(this.rawQuaternion);
+      source.getWorldScale(this.rawScale);
+      if (![this.rawPosition.x,this.rawPosition.y,this.rawPosition.z,
+            this.rawQuaternion.x,this.rawQuaternion.y,this.rawQuaternion.z,
+            this.rawQuaternion.w].every(Number.isFinite)) return;
+      if (!this.initializedPose) {
+        dest.position.copy(this.rawPosition);
+        dest.quaternion.copy(this.rawQuaternion);
+        dest.scale.copy(this.rawScale);
+        this.initializedPose = true;
+        dest.visible = true;
+        return;
+      }
+      const step = Math.min(Math.max(dt || 16.7, 1), 75);
+      const displacement = dest.position.distanceTo(this.rawPosition);
+      // Small movements are smoothed more strongly; deliberate panning follows faster.
+      const positionTau = displacement > 0.10 ? 105 : 215;
+      const ap = 1 - Math.exp(-step / positionTau);
+      const ar = 1 - Math.exp(-step / 255);
+      dest.position.lerp(this.rawPosition, ap);
+      dest.quaternion.slerp(this.rawQuaternion, ar);
+      dest.scale.lerp(this.rawScale, ap);
+      dest.updateMatrixWorld(true);
+    }
+  });
+  </script>
 </head>
 <body>
   <!-- No branding is visible before recognition. The only text in the experience is EEL CIBERSEGURIDAD. -->
@@ -57,7 +114,7 @@
   <div id="error" role="alert" hidden></div>
 
   <a-scene id="scene"
-    mindar-image="imageTargetSrc: assets/target.mind; autoStart: true; uiLoading: false; uiScanning: false; uiError: false; filterMinCF: 0.001; filterBeta: 0.1; warmupTolerance: 5; missTolerance: 12; maxTrack: 1"
+    mindar-image="imageTargetSrc: assets/target.mind; autoStart: true; uiLoading: false; uiScanning: false; uiError: false; filterMinCF: 0.0005; filterBeta: 0.025; warmupTolerance: 7; missTolerance: 14; maxTrack: 1"
     color-space="sRGB"
     renderer="colorManagement: true; physicallyCorrectLights: true; antialias: true; alpha: true"
     vr-mode-ui="enabled: false"
@@ -77,7 +134,8 @@
     <a-light type="directional" position="-0.4 0.7 1.2" intensity="1.5" color="#ebfaff"></a-light>
     <a-light type="point" position="0.4 -0.22 0.8" intensity="1.15" color="#4dbfff" distance="2.8" decay="1.3"></a-light>
 
-    <a-entity id="target" mindar-image-target="targetIndex:0">
+    <a-entity id="target" mindar-image-target="targetIndex:0"></a-entity>
+    <a-entity id="visualRig" eel-stabilizer="target: #target">
       <a-entity id="sculpt" scale="0.8 0.8 0.8"
         animation__arrive="property:scale;from:0.82 0.82 0.82;to:1 1 1;dur:800;easing:easeOutCubic;startEvents:eel-appear">
 
@@ -88,8 +146,8 @@
           material="shader:flat;transparent:true;side:double;depthWrite:false"></a-circle>
 
         <!-- Actual high-relief GLB: textured hoodie with curved front and side walls. -->
-        <a-entity id="hackerFloat" position="0 0 0.015" rotation="0 -9 0"
-          animation__turn="property:rotation;from:0 -9 0;to:0 9 0;dur:7500;dir:alternate;loop:true;easing:easeInOutSine">
+        <a-entity id="hackerFloat" position="0 0 0.015" rotation="0 -3 0"
+          animation__turn="property:rotation;from:0 -3 0;to:0 3 0;dur:12000;dir:alternate;loop:true;easing:easeInOutSine">
           <a-entity id="hackerModel" gltf-model="#eelModel" position="0 0 0"></a-entity>
 
           <!-- Electric tracery moves WITH the 3D character to reveal its depth. -->
@@ -157,12 +215,16 @@
     const scene=document.getElementById('scene');
     const error=document.getElementById('error');
     const brand=document.getElementById('brand');
+    const visual=document.getElementById('visualRig');
+    const smoothing=()=>visual && visual.components['eel-stabilizer'];
     let lostTimer=null;
     let modelReady=false;
     const showError=s=>{error.textContent=s;error.hidden=false;};
     const clearError=()=>{error.textContent='';error.hidden=true;};
     const found=()=>{
       if(lostTimer){clearTimeout(lostTimer);lostTimer=null;}
+      const controller=smoothing();
+      if (controller && !controller.enabledTracking) controller.activate();
       document.body.classList.add('found');
       brand.setAttribute('aria-hidden','false');
       document.getElementById('sculpt').emit('eel-appear');
@@ -170,10 +232,13 @@
     };
     const lost=()=>{
       if(lostTimer)clearTimeout(lostTimer);
+      // Briefly retain the last stable pose through intermittent tracking dropouts.
       lostTimer=setTimeout(()=>{
+        const controller=smoothing();
+        if(controller)controller.deactivate();
         document.body.classList.remove('found');
         brand.setAttribute('aria-hidden','true');
-      },650);
+      },950);
     };
     target.addEventListener('targetFound',found);
     target.addEventListener('targetLost',lost);
@@ -186,6 +251,7 @@
       .catch(()=>{});
     window.addEventListener('pagehide',()=>{
       if(lostTimer)clearTimeout(lostTimer);
+      const controller=smoothing(); if(controller)controller.deactivate();
       const sys=scene.systems&&scene.systems['mindar-image-system'];
       if(sys){try{sys.stop()}catch(_){}}
     });
