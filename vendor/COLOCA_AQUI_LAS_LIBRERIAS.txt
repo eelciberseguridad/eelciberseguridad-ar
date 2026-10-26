@@ -1,0 +1,1 @@
+Las dos bibliotecas JavaScript se descargan con PREPARAR_DEPENDENCIAS.py. No subas este texto a GitHub si no hace falta.

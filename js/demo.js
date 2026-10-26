@@ -1,0 +1,1 @@
+const scene=document.getElementById('scene'),pause=document.getElementById('pause');document.getElementById('restart').onclick=()=>{location.reload()};pause.onclick=()=>{scene.classList.toggle('paused');pause.textContent=scene.classList.contains('paused')?'REANUDAR EFECTOS':'PAUSAR EFECTOS'}
