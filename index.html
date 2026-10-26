@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#010711">
+  <meta name="referrer" content="no-referrer">
+  <title>EEL CIBERSEGURIDAD</title>
+  <!-- EEL AR: edición premium de archivo único, 2026-10-25. -->
+  <!-- Usa únicamente las bibliotecas y las imágenes ya existentes en el repositorio. -->
+  <style>
+    :root { color-scheme: dark; }
+    html, body { width:100%; height:100%; margin:0; padding:0; overflow:hidden; background:#010711; }
+    body { position:fixed; inset:0; font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif; }
+    .brand {
+      position:fixed; z-index:40; left:50%; transform:translateX(-50%);
+      top:calc(env(safe-area-inset-top, 0px) + 16px);
+      max-width:calc(100vw - 34px); padding:15px 21px 16px;
+      border-radius:16px;
+      border:1px solid rgba(89,208,250,.40);
+      background:linear-gradient(145deg,rgba(2,15,29,.92),rgba(2,10,23,.82));
+      box-shadow:0 8px 24px rgba(0,0,0,.40),0 0 28px rgba(26,172,232,.12);
+      color:#ecfaff; font-weight:800; font-size:clamp(15px,4vw,23px);
+      white-space:nowrap; text-align:center; letter-spacing:.115em;
+      -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+      pointer-events:none; transition:border-color .35s,box-shadow .35s;
+    }
+    body.found .brand {
+      border-color:rgba(137,234,255,.88);
+      box-shadow:0 8px 24px rgba(0,0,0,.44),0 0 32px rgba(64,211,255,.34);
+    }
+    .brand::after {
+      content:"";display:block;position:absolute;left:18%;right:18%;bottom:0;height:2px;
+      background:linear-gradient(90deg,transparent,#5ad9ff,transparent);opacity:.85;
+    }
+    .error-box {
+      position:fixed; z-index:70; left:50%; bottom:calc(env(safe-area-inset-bottom, 0px) + 25px);
+      transform:translateX(-50%);width:min(88vw,480px);padding:13px 16px;
+      background:rgba(40,9,16,.94);border:1px solid #ff8e99;border-radius:12px;
+      color:#fff0f0;font:500 13px/1.5 system-ui,Arial,sans-serif;text-align:center;
+      box-shadow:0 8px 24px #0009;
+    }
+    [hidden] { display:none !important; }
+    .a-enter-vr-button,.a-enter-ar-button { display:none !important; }
+    #arScene { width:100%;height:100%; }
+  </style>
+  <script src="vendor/aframe.min.js"></script>
+  <script src="vendor/mindar-image-aframe.prod.js"></script>
+</head>
+<body>
+  <!-- El único texto de marca en la interfaz normal. -->
+  <div class="brand">EEL CIBERSEGURIDAD</div>
+  <div class="error-box" id="arErrorMessage" role="alert" hidden></div>
+
+  <a-scene id="arScene"
+    mindar-image="imageTargetSrc: assets/target.mind; maxTrack: 1; autoStart: true; uiLoading: no; uiScanning: no; uiError: no; filterMinCF: 0.001; filterBeta: 500; warmupTolerance: 5; missTolerance: 8;"
+    color-space="sRGB"
+    renderer="colorManagement: true; physicallyCorrectLights: true; antialias: true; alpha: true"
+    vr-mode-ui="enabled: false"
+    device-orientation-permission-ui="enabled: false"
+    embedded>
+    <a-assets timeout="18000">
+      <img id="coatLight" src="assets/coat-electric.png" crossorigin="anonymous">
+      <img id="sparkLight" src="assets/spark.png" crossorigin="anonymous">
+    </a-assets>
+    <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+
+    <a-entity id="eelMarker" mindar-image-target="targetIndex: 0">
+      <!-- Iluminación suave alineada con el logo; sin texto ni paneles. -->
+      <a-plane width="1" height="1" position="0 0 0.008" src="#coatLight"
+        material="shader: flat; transparent: true; opacity: .20; side: double; depthWrite: false"
+        animation__shine="property: material.opacity; from: .14; to: .33; dur: 3400; dir: alternate; loop: true; easing: easeInOutSine">
+      </a-plane>
+      <!-- Halo casi inmóvil, para no amplificar el temblor visual. -->
+      <a-ring position="0 0 0.033" radius-inner=".494" radius-outer=".501"
+        material="shader: flat; color: #5ed8ff; opacity: .69; transparent: true; side: double; depthWrite: false">
+      </a-ring>
+      <a-ring position="0 0 .037" radius-inner=".525" radius-outer=".530"
+        theta-start="35" theta-length="245"
+        material="shader: flat; color: #a2edff; opacity: .40; transparent: true; side: double; depthWrite: false"
+        animation__orbit="property: rotation; to: 0 0 360; dur: 48000; loop: true; easing: linear">
+      </a-ring>
+      <!-- Barrido vertical discreto. -->
+      <a-entity position="0 -.43 .050"
+        animation__scan="property: position; from: 0 -.43 .050; to: 0 .43 .050; dur: 7000; loop: true; easing: linear">
+        <a-plane width=".85" height=".003"
+          material="shader: flat; color: #a8f2ff; opacity: .36; transparent: true; side: double; depthWrite: false">
+        </a-plane>
+        <a-plane width=".85" height=".035" position="0 -.019 -.003"
+          material="shader: flat; color: #35b6ee; opacity: .055; transparent: true; side: double; depthWrite: false">
+        </a-plane>
+      </a-entity>
+      <!-- Cuatro destellos sutiles, en vez de decenas de objetos flotantes. -->
+      <a-plane src="#sparkLight" width=".15" height=".15" position="-.30 .26 .061"
+        material="shader: flat; transparent: true; opacity: .25; depthWrite: false; side: double"
+        animation__blink="property: material.opacity; from: .12; to: .35; dur: 3900; dir: alternate; loop: true; easing: easeInOutSine">
+      </a-plane>
+      <a-plane src="#sparkLight" width=".12" height=".12" position=".29 .20 .065"
+        material="shader: flat; transparent: true; opacity: .22; depthWrite: false; side: double"
+        animation__blink="property: material.opacity; from: .09; to: .31; dur: 4700; dir: alternate; loop: true; easing: easeInOutSine">
+      </a-plane>
+    </a-entity>
+  </a-scene>
+
+  <script>
+  (() => {
+    'use strict';
+    const scene = document.getElementById('arScene');
+    const marker = document.getElementById('eelMarker');
+    const errorBox = document.getElementById('arErrorMessage');
+    const error = (text) => { errorBox.textContent = text; errorBox.hidden = false; };
+    marker.addEventListener('targetFound', () => { document.body.classList.add('found'); errorBox.hidden = true; });
+    marker.addEventListener('targetLost', () => { document.body.classList.remove('found'); });
+    scene.addEventListener('arReady', () => { errorBox.hidden = true; });
+    scene.addEventListener('arError', () => { error('No se pudo iniciar la cámara o el reconocimiento AR. Revisá los permisos y target.mind.'); });
+    window.addEventListener('error', (event) => {
+      if (/mindar|aframe|webgl/i.test(event.message || '')) error('Error al cargar el motor de realidad aumentada.');
+    });
+  })();
+  </script>
+</body>
+</html>
