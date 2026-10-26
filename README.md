@@ -1,9 +1,5 @@
 # EEL CIBERSEGURIDAD
 
-> **[Abrir la guía interactiva con enlaces que se abren en pestañas nuevas](https://eelciberseguridad.github.io/eelciberseguridad-ar/guia_realidad_aumentada.html)**
->
-> La guía conserva el contenido de este README. Allí, al abrir documentación, demostraciones o fuentes, la guía permanece abierta. **Dentro del README que muestra GitHub no es posible forzar automáticamente una pestaña nueva**; si querés conservarlo abierto, usá `Ctrl + clic` (Windows/Linux), `Cmd + clic` (Mac) o el menú contextual «Abrir enlace en pestaña nueva».
-
 ### Realidad aumentada aplicada a la educación y la seguridad digital
 
 **¿Te imaginás que una imagen impresa pudiera convertirse en una escena tridimensional?**
