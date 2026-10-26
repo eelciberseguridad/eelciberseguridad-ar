@@ -1,0 +1,89 @@
+<!doctype html>
+<!DOCTYPE html>
+
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1, viewport-fit=cover" name="viewport"/>
+<meta content="#060c16" name="theme-color"/>
+<meta content="strict-origin-when-cross-origin" name="referrer"/>
+<title>Guía de realidad aumentada · EEL Ciberseguridad</title>
+<style>
+:root{color-scheme:dark;--bg:#060c16;--panel:#0c1627;--fg:#e9f4fc;--muted:#a6b8c8;--cyan:#6ad9ff;--line:#233a53}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:radial-gradient(ellipse at top,#122841 0,#060c16 52%);color:var(--fg);font:16px/1.8 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+main{max-width:870px;margin:auto;padding:44px 22px 95px}h1,h2,h3{line-height:1.25;letter-spacing:-.02em}h1{font-size:clamp(2rem,5vw,3.25rem);font-weight:800;margin:0 0 12px}h2{font-size:1.55rem;margin:42px 0 12px;padding-top:15px;border-top:1px solid var(--line)}h3{font-size:1.15rem;margin:28px 0 10px;color:#d4f3ff}p,li{color:#d7e4ee}p{margin:12px 0 17px}strong{color:#fff}a{color:var(--cyan);text-underline-offset:3px;word-break:break-word}a:hover{color:white}ul,ol{padding-left:25px}li{margin-bottom:8px}code{background:#14283d;padding:2px 6px;border-radius:5px;color:#c1ebff;overflow-wrap:anywhere}img{max-width:100%;height:auto;border-radius:16px;box-shadow:0 20px 65px #0009}blockquote{border-left:3px solid var(--cyan);padding:10px 18px;margin:18px 0;background:var(--panel)}hr{border:0;border-top:1px solid var(--line);margin-top:38px}.brand{font-size:.76rem;letter-spacing:.21em;color:var(--cyan);text-transform:uppercase;font-weight:800;margin-bottom:20px}.content{padding:34px;border:1px solid var(--line);border-radius:20px;background:rgba(7,17,31,.79);box-shadow:0 18px 80px #0004}@media(max-width:600px){main{padding:25px 12px 55px}.content{padding:21px 17px}body{font-size:15px}}@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+
+.link-note{margin:12px 0 22px;padding:12px 15px;border-left:3px solid #6ad9ff;background:rgba(18,44,70,.65);font-size:.92em;color:#cce8f8}
+</style>
+</head>
+<body>
+<main><div class="brand">EEL CIBERSEGURIDAD · Guía educativa</div>
+<article class="content"><h1>EEL CIBERSEGURIDAD</h1>
+<p class="link-note">Todos los enlaces de esta guía abren una pestaña nueva para que puedas seguir leyendo sin perder tu lugar.</p><h3>Realidad aumentada aplicada a la educación y la seguridad digital</h3>
+<p><strong>¿Te imaginás que una imagen impresa pudiera convertirse en una escena tridimensional?</strong></p>
+<p>Este proyecto es un laboratorio educativo de realidad aumentada (AR). Al enfocar el logo de <strong>EEL CIBERSEGURIDAD</strong> desde la experiencia web, el sistema reconoce la imagen y superpone sobre ella un personaje digital con volumen, iluminación y efectos animados.</p>
+<p>El logo físico no cambia: lo que cambia es lo que vemos a través de la cámara mientras se ejecuta el programa.</p>
+<p><img alt="Marcador original de EEL Ciberseguridad" src="assets/logo-marker.png"/></p>
+<h2>Probalo vos mismo</h2>
+<p><strong>1. En la computadora o en una hoja impresa:</strong> mostrá el <a href="https://eelciberseguridad.github.io/eelciberseguridad-ar/assets/logo-marker.png" rel="noopener noreferrer" target="_blank">logo original</a> completo y de buen tamaño.</p>
+<p><strong>2. En el celular:</strong> abrí con Chrome la <a href="https://eelciberseguridad.github.io/eelciberseguridad-ar/eel-3d-v5.html" rel="noopener noreferrer" target="_blank">experiencia WebAR V5</a>, siempre que esa versión ya esté publicada en GitHub Pages.</p>
+<p><strong>3. Autorizá la cámara:</strong> el navegador necesita permiso para capturar imágenes en tiempo real.</p>
+<p><strong>4. Enfocá el logo:</strong> mantenelo completo en pantalla y mové el teléfono lentamente. Cuando la aplicación lo identifica, aparece la escena digital asociada.</p>
+<p>No basta con abrir la aplicación Cámara del teléfono: hace falta ejecutar la página WebAR, porque allí están las instrucciones y los recursos necesarios para reconocer el marcador y mostrar los efectos.</p>
+<h2>¿Qué es la realidad aumentada?</h2>
+<p>La <strong>realidad aumentada</strong> combina imágenes captadas del mundo físico con información u objetos digitales. A diferencia de la realidad virtual, no reemplaza todo el entorno: agrega una capa de contenido calculada por el software sobre lo que la cámara está mostrando.</p>
+<p>En nuestro caso, el objeto real es el logo. El contenido digital incluye un modelo 3D de alto relieve del hacker, iluminación azul y animaciones que parecen estar vinculadas a esa imagen.</p>
+<h2>¿Cómo funciona? Paso a paso</h2>
+<h3>1. Elegimos la imagen que servirá de marcador</h3>
+<p>Primero seleccionamos <code>assets/logo-marker.png</code>. El marcador debe tener detalles visuales reconocibles para que el software pueda encontrarlo en diferentes posiciones y ángulos. Puede mostrarse en una pantalla o imprimirse sobre una superficie plana.</p>
+<h3>2. Compilamos sus características visuales</h3>
+<p>Con el <a href="https://hiukim.github.io/mind-ar-js-doc/tools/compile/" rel="noopener noreferrer" target="_blank">compilador de imágenes de MindAR</a> procesamos el logo para generar <code>assets/target.mind</code>.</p>
+<p>Ese archivo contiene información preparada para el reconocimiento: <strong>no es la animación ni una copia de video</strong>. Es la referencia que el motor utiliza para buscar coincidencias con la imagen que ve la cámara.</p>
+<h3>3. El navegador obtiene los fotogramas</h3>
+<p>Cuando abrimos la experiencia por HTTPS y permitimos el uso de la cámara, el navegador obtiene una secuencia de imágenes en tiempo real. Esta función requiere el consentimiento del usuario.</p>
+<h3>4. MindAR reconoce y sigue el marcador</h3>
+<p>El motor compara características visuales de los fotogramas con la información del archivo <code>.mind</code>. Si encuentra una coincidencia suficientemente confiable, estima la ubicación y la orientación del marcador respecto de la cámara.</p>
+<p>No alcanza con identificar <strong>qué</strong> imagen es. También debe saber <strong>dónde está</strong> y <strong>cómo está inclinada</strong>.</p>
+<h3>5. La escena 3D se coloca sobre el logo</h3>
+<p><strong>A-Frame</strong>, una herramienta para crear escenas tridimensionales en la web, representa el contenido digital. El navegador utiliza tecnologías gráficas como <strong>WebGL</strong> para dibujar geometría, materiales, luces y animaciones.</p>
+<p>En esta versión se utiliza un archivo <code>.glb</code>: un modelo con geometría tridimensional de alto relieve. No es todavía una escultura humana completa observable desde cualquier ángulo.</p>
+<h3>6. Todo se actualiza mientras movemos el teléfono</h3>
+<p>Mientras la cámara continúa viendo el logo, MindAR actualiza su posición estimada y la escena se ajusta. Así aparece la sensación de que los objetos digitales permanecen ligados a la superficie física.</p>
+<p>El seguimiento puede temblar o perderse por reflejos, iluminación insuficiente, movimientos bruscos o poca definición. El suavizado reduce saltos, aunque puede introducir un pequeño retraso.</p>
+<h2>¿Qué tiene que ver con la ciberseguridad?</h2>
+<p>Imaginemos un laboratorio educativo con un esquema impreso de una red: al enfocarlo podrían visualizarse las conexiones entre equipos, el recorrido de paquetes y una representación del trabajo de un firewall. La realidad aumentada permite explorar procesos que normalmente se explican con diagramas estáticos.</p>
+<p>Pero también plantea desafíos de seguridad. <strong>Una interfaz digital puede mostrar información que no existe físicamente.</strong></p>
+<p>Pensemos en un comercio que ofrece un catálogo interactivo de productos mediante realidad aumentada. Si un atacante consiguiera sustituir esa experiencia por otra fraudulenta, podría conservar la apariencia del comercio y mostrar instrucciones de pago con un destinatario diferente. El cliente podría confiar en una información falsa superpuesta sobre un entorno auténtico.</p>
+<p>Eso <strong>no modifica automáticamente una transferencia bancaria</strong> y no implica que la cámara común del teléfono esté comprometida. Se trata de un escenario hipotético de <strong>ingeniería social mediante una experiencia digital manipulada</strong>, no de un delito específico que estemos afirmando que ya ocurrió.</p>
+<p>La enseñanza es importante: <strong>que una imagen física sea legítima no garantiza que la información digital superpuesta también lo sea</strong>.</p>
+<h2>¿Y si imprimo el logo?</h2>
+<p>La impresión puede funcionar con el mismo <code>target.mind</code>, siempre que represente fielmente la imagen original. Recomendamos probar un tamaño de 15 × 15 cm o mayor, buena definición, papel mate y una superficie plana. La calidad del seguimiento depende de las condiciones reales de la prueba.</p>
+<h2>Tecnología y archivos principales</h2>
+<ul>
+<li><strong>MindAR:</strong> reconocimiento y seguimiento de la imagen.</li>
+<li><strong>A-Frame / WebGL:</strong> representación de la escena 3D.</li>
+<li><strong>GLB:</strong> geometría y materiales del modelo digital.</li>
+<li><strong>GitHub Pages:</strong> publicación de los archivos estáticos mediante HTTPS.</li>
+<li><strong><code>assets/logo-marker.png</code>:</strong> imagen original que se enfoca.</li>
+<li><strong><code>assets/target.mind</code>:</strong> marcador compilado para MindAR.</li>
+<li><strong><code>eel-3d-v5.html</code>:</strong> experiencia experimental de realidad aumentada, si fue publicada.</li>
+</ul>
+<h2>Seguridad y privacidad</h2>
+<p>Esta demostración necesita permiso para utilizar la cámara. Está concebida para reconocer una imagen y mostrar efectos educativos, <strong>no para solicitar contraseñas, datos bancarios ni realizar pagos</strong>. Los archivos del repositorio público se pueden inspeccionar; las bibliotecas externas y las futuras modificaciones deben revisarse antes de cada publicación. GitHub y el navegador pueden procesar datos técnicos propios del servicio.</p>
+<p>Para salir de la experiencia, cerrá la pestaña o revocá el permiso de cámara desde el navegador.</p>
+<h2>Recursos para aprender más</h2>
+<ul>
+<li><a href="https://hiukim.github.io/mind-ar-js-doc/" rel="noopener noreferrer" target="_blank">MindAR — Documentación y ejemplos</a></li>
+<li><a href="https://hiukim.github.io/mind-ar-js-doc/tools/compile/" rel="noopener noreferrer" target="_blank">MindAR — Compilador de marcadores</a></li>
+<li><a href="https://www.mindar.org/how-to-choose-a-good-target-image-for-tracking-in-ar-part-3/" rel="noopener noreferrer" target="_blank">MindAR — Cómo elegir una buena imagen de seguimiento</a></li>
+<li><a href="https://aframe.io/docs/" rel="noopener noreferrer" target="_blank">A-Frame — Documentación de escenas 3D</a></li>
+<li><a href="https://developer.mozilla.org/es/docs/Web/API/MediaDevices/getUserMedia" rel="noopener noreferrer" target="_blank">MDN — Permisos y acceso a la cámara</a></li>
+<li><a href="https://www.blender.org/features/sculpting/" rel="noopener noreferrer" target="_blank">Blender — Escultura digital</a></li>
+<li><a href="https://docs.github.com/es/pages" rel="noopener noreferrer" target="_blank">GitHub Pages — Documentación oficial</a></li>
+</ul>
+<hr/>
+<p><strong>EEL CIBERSEGURIDAD</strong><br/>
+Protección · Investigación · Entornos Digitales</p>
+<p><em>Proyecto demostrativo y educativo en evolución. Su funcionamiento depende de la compatibilidad del navegador, el dispositivo y las condiciones de reconocimiento.</em></p>
+</article></main>
+</body></html>
