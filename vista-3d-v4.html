@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>EEL CIBERSEGURIDAD — Vista 3D</title>
+<script src="vendor/aframe.min.js"></script>
+<style>
+html,body{margin:0;background:#010713;color:#f0fbff;font-family:Arial,Helvetica,sans-serif;overflow:hidden}
+#label{position:fixed;z-index:10;left:50%;bottom:9vh;transform:translateX(-50%);white-space:nowrap;text-align:center;
+font-size:clamp(17px,5vw,32px);font-weight:900;letter-spacing:.11em;text-shadow:0 0 12px #23aafa,0 0 30px #008bff;}
+#label:after{content:"";display:block;margin:15px auto 0;width:76%;height:2px;background:linear-gradient(90deg,transparent,#81eeff,transparent);box-shadow:0 0 18px #2cbaff}
+.a-enter-vr-button{display:none!important}
+a-scene{position:fixed!important;inset:0;width:100%!important;height:100%!important}
+</style>
+</head>
+<body>
+<div id="label">EEL CIBERSEGURIDAD</div>
+<a-scene color-space="sRGB" renderer="colorManagement:true;physicallyCorrectLights:true;antialias:true" vr-mode-ui="enabled:false" embedded>
+<a-assets><a-asset-item id="eel" src="assets/eel_hacker_relief_v4.glb"></a-asset-item><img id="background" src="assets/eel_background_v4.png"></a-assets>
+<a-camera position="0 0 1.65" look-controls="enabled:false"></a-camera>
+<a-light type="ambient" color="#bfdeff" intensity="1.3"></a-light>
+<a-light type="directional" position="-0.5 0.8 2" intensity="1.7" color="#e6faff"></a-light>
+<a-light type="point" position="0.4 -0.1 0.8" intensity="1.1" color="#2eafff"></a-light>
+<a-entity position="0 0 0" scale="1.5 1.5 1.5">
+ <a-cylinder radius="0.50" height="0.10" rotation="90 0 0" position="0 0 0.026" material="color:#061727;metalness:.75;roughness:.25"></a-cylinder>
+ <a-circle radius="0.50" segments="90" src="#background" position="0 0 .083" material="shader:flat;transparent:true;side:double"></a-circle>
+ <a-entity gltf-model="#eel" position="0 0 .015" animation="property:rotation;from:0 -30 0;to:0 30 0;dur:6000;loop:true;dir:alternate;easing:easeInOutSine"></a-entity>
+ <a-torus radius=".51" radius-tubular=".009" position="0 0 .13" material="color:#54d7ff;metalness:.75;roughness:.22;emissive:#129bff;emissiveIntensity:.5"></a-torus>
+</a-entity>
+</a-scene>
+</body>
+</html>
