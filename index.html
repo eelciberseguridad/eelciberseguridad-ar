@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#03070e">
+  <meta name="referrer" content="no-referrer">
+  <meta name="description" content="Experiencia educativa de realidad aumentada de EEL Ciberseguridad. Requiere permiso de cámara para reconocer un logo.">
+  <title>EEL CIBERSEGURIDAD | Experiencia AR</title>
+  <link rel="stylesheet" href="css/app.css">
+  <style>
+    /* La cámara ocupa toda la pantalla; no se muestra ninguna portada previa. */
+    .camera-wait,.camera-error{position:fixed;inset:0;z-index:40;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;padding:30px;text-align:center;background:radial-gradient(circle at 50% 45%,#071e31 0%,#02060e 70%);color:#d8f7ff}
+    .camera-wait p{font-size:clamp(16px,4.2vw,23px);font-weight:650;letter-spacing:.015em;line-height:1.45;margin:0}
+    .loader-ring{height:56px;width:56px;border:2px solid #15506a;border-top-color:#61dfff;border-right-color:#2c9fd6;border-radius:50%;animation:eelSpin 1.5s linear infinite;box-shadow:0 0 25px #1596bf35}
+    @keyframes eelSpin{to{transform:rotate(360deg)}}
+    .camera-error{background:#020811;gap:24px;padding:30px 22px}
+    .camera-error p{font-size:15px;line-height:1.65;max-width:420px;white-space:pre-line;margin:0;color:#c7eafb}
+    .camera-error button{padding:13px 22px;background:#0c567d;border:1px solid #64cefa;border-radius:7px;color:#fff;font-weight:750;font-size:13px;letter-spacing:.04em}
+    .ar-chrome{position:fixed;inset:0;z-index:20;pointer-events:none}
+    .exit-auto{pointer-events:auto;position:absolute;right:16px;top:max(18px,env(safe-area-inset-top));border:1px solid #7ddfff8a;background:#051422b3;color:#e8f9ff;width:40px;height:40px;border-radius:50%;font-size:20px}
+    .scan-prompt{position:absolute;left:12px;right:12px;bottom:max(46px,env(safe-area-inset-bottom));text-align:center;color:#e6faff;font-size:clamp(15px,4vw,20px);font-weight:650;text-shadow:0 2px 12px #000,0 0 15px #000;padding:12px 9px;line-height:1.4}
+    .a-enter-vr-button,.a-enter-ar-button,.a-orientation-modal{display:none!important}
+    #arScene{position:absolute!important;inset:0!important;width:100%!important;height:100%!important}
+  </style>
+
+  <script src="vendor/aframe.min.js"></script>
+  <script src="vendor/mindar-image-aframe.prod.js"></script>
+</head>
+<body class="ar-body">
+  <!-- Arranque automático: solo se solicita el permiso de cámara requerido por el navegador. -->
+  <div id="cameraWait" class="camera-wait" role="status" aria-live="polite">
+    <div class="loader-ring" aria-hidden="true"></div>
+    <p>Enfocá el logo con la cámara.</p>
+  </div>
+  <div id="cameraError" class="camera-error" role="alert" hidden>
+    <p id="errorText">No se pudo iniciar la cámara.</p>
+    <button id="retryBtn" type="button">REINTENTAR CÁMARA</button>
+  </div>
+  <div class="ar-chrome" id="arChrome" hidden>
+    <button id="exitBtn" class="exit-auto" type="button" title="Cerrar cámara" aria-label="Cerrar cámara">✕</button>
+    <div id="scanPrompt" class="scan-prompt">Enfocá el logo con la cámara.</div>
+  </div>
+  <a-scene id="arScene"
+    mindar-image="imageTargetSrc: assets/target.mind; autoStart: false; uiLoading: false; uiScanning: false; uiError: false; filterMinCF: 0.0001; filterBeta: 1000;"
+    color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights: true; antialias: true"
+    vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false" embedded>
+    <a-assets timeout="15000">
+      <img id="coatFX" src="assets/coat-electric.png">
+      <img id="sparkFX" src="assets/spark.png">
+      <img id="brandPlate" src="assets/titleplate.png">
+    </a-assets>
+    <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+    <a-entity id="eelTarget" mindar-image-target="targetIndex: 0">
+      <!-- Traza energética sobre la vestimenta: no mueve la foto física. -->
+      <a-plane src="#coatFX" position="0 0 0.018" width="1" height="1"
+        material="shader: flat; transparent: true; opacity: 0.32; depthWrite: false; side: double"
+        animation="property: material.opacity; from: 0.12; to: 0.62; dur: 2200; dir: alternate; loop: true; easing: easeInOutSine"></a-plane>
+      <!-- Anillos: están paralelos al plano de la fotografía -->
+      <a-ring position="0 0 0.085" radius-inner="0.490" radius-outer="0.496"
+        material="shader: flat; color: #23b4ff; transparent: true; opacity: 0.70; side: double; depthWrite: false"
+        animation="property: rotation; to: 0 0 360; dur: 15000; loop: true; easing: linear"></a-ring>
+      <a-ring position="0 0 0.080" radius-inner="0.520" radius-outer="0.526" theta-start="30" theta-length="250"
+        material="shader: flat; color: #85e6ff; transparent: true; opacity: 0.48; side: double; depthWrite: false"
+        animation="property: rotation; to: 0 0 -360; dur: 20500; loop: true; easing: linear"></a-ring>
+      <a-ring position="0 0 0.055" radius-inner="0.460" radius-outer="0.466"
+        material="shader: flat; color: #0c86ce; transparent: true; opacity: 0.29; side: double; depthWrite: false"
+        animation="property: scale; to: 1.045 1.045 1.045; dir: alternate; dur: 2000; loop: true; easing: easeInOutSine"></a-ring>
+      <!-- Línea de escaneo del logo -->
+      <a-entity id="scanner" position="0 -0.46 0.10"
+        animation="property: position; from: 0 -0.46 0.10; to: 0 0.46 0.10; dur: 2850; loop: true; easing: linear">
+        <a-plane width="0.96" height="0.0035" material="shader: flat; color: #54dfff; opacity: 0.76; transparent: true; side: double; depthWrite: false"></a-plane>
+        <a-plane width="0.96" height="0.027" position="0 -0.014 -0.002" material="shader: flat; color: #219fdc; opacity: 0.11; transparent: true; side: double; depthWrite: false"></a-plane>
+      </a-entity>
+      <!-- Partículas: puntos con volumen delante del marcador -->
+      <a-entity id="particles">
+        <a-sphere radius="0.007" color="#66d8ff" position="-.37 .24 .19" animation="property: position; to: -.34 .34 .19; dir: alternate; dur: 1600; loop: true"></a-sphere>
+        <a-sphere radius="0.004" color="#d8faff" position=".32 .31 .21" animation="property: position; to: .30 .42 .21; dir: alternate; dur: 2300; loop: true"></a-sphere>
+        <a-sphere radius="0.005" color="#189fff" position="-.26 -.24 .20" animation="property: position; to: -.29 -.13 .20; dir: alternate; dur: 2500; loop: true"></a-sphere>
+        <a-sphere radius="0.006" color="#83e8ff" position=".35 -.20 .25" animation="property: position; to: .33 -.10 .25; dir: alternate; dur: 1900; loop: true"></a-sphere>
+        <a-sphere radius="0.003" color="#9ceeff" position=".08 .35 .12" animation="property: position; to: .09 .46 .12; dir: alternate; dur: 1800; loop: true"></a-sphere>
+        <a-sphere radius="0.004" color="#43ceff" position="-.13 -.39 .20" animation="property: position; to: -.15 -.28 .20; dir: alternate; dur: 2100; loop: true"></a-sphere>
+      </a-entity>
+      <!-- Encabezado superior: entrada escalonada al detectar el objetivo -->
+      <a-entity id="titleIntro" data-intro position="0 .61 .17" scale="0.01 0.01 0.01">
+        <a-plane src="#brandPlate" width="1.12" height=".204" position="0 0 .012" material="shader: flat; transparent: true; side: double; depthWrite: false"></a-plane>
+      </a-entity>
+      <!-- Cuatro paneles en perspectiva 3D con oscilación sutil -->
+      <a-entity id="p1" data-intro position="-.51 .24 .25" rotation="0 15 0" scale="0.01 0.01 0.01">
+        <a-entity animation="property: position; to: 0 .018 0; dur: 1950; dir: alternate; loop: true; easing: easeInOutSine">
+          <a-plane width=".38" height=".16" material="shader: flat; color: #031426; opacity: .88; transparent: true; side: double"></a-plane>
+          <a-plane width=".38" height=".004" color="#50ccff" position="0 .08 .01"></a-plane>
+          <a-text value="PROTECCION" align="center" color="#bfefff" width=".65" position="0 .006 .012"></a-text>
+          <a-text value="SEGURIDAD DIGITAL" align="center" color="#58a9d3" width=".43" position="0 -.045 .012"></a-text>
+        </a-entity>
+      </a-entity>
+      <a-entity id="p2" data-intro position=".51 .19 .29" rotation="0 -15 0" scale="0.01 0.01 0.01">
+        <a-entity animation="property: position; to: 0 .022 0; dur: 2350; dir: alternate; loop: true; easing: easeInOutSine">
+          <a-plane width=".41" height=".16" material="shader: flat; color: #031426; opacity: .88; transparent: true; side: double"></a-plane>
+          <a-plane width=".41" height=".004" color="#50ccff" position="0 .08 .01"></a-plane>
+          <a-text value="INVESTIGACION" align="center" color="#bfefff" width=".65" position="0 .006 .012"></a-text>
+          <a-text value="ANALISIS FORENSE" align="center" color="#58a9d3" width=".44" position="0 -.045 .012"></a-text>
+        </a-entity>
+      </a-entity>
+      <a-entity id="p3" data-intro position="-.49 -.25 .27" rotation="0 11 0" scale="0.01 0.01 0.01">
+        <a-entity animation="property: position; to: 0 .017 0; dur: 2200; dir: alternate; loop: true; easing: easeInOutSine">
+          <a-plane width=".39" height=".16" material="shader: flat; color: #031426; opacity: .88; transparent: true; side: double"></a-plane>
+          <a-plane width=".39" height=".004" color="#50ccff" position="0 .08 .01"></a-plane>
+          <a-text value="ETHICAL HACKING" align="center" color="#bfefff" width=".65" position="0 .006 .012"></a-text>
+          <a-text value="ENTORNOS CONTROLADOS" align="center" color="#58a9d3" width=".42" position="0 -.045 .012"></a-text>
+        </a-entity>
+      </a-entity>
+      <a-entity id="p4" data-intro position=".49 -.26 .32" rotation="0 -12 0" scale="0.01 0.01 0.01">
+        <a-entity animation="property: position; to: 0 .020 0; dur: 2050; dir: alternate; loop: true; easing: easeInOutSine">
+          <a-plane width=".42" height=".16" material="shader: flat; color: #031426; opacity: .88; transparent: true; side: double"></a-plane>
+          <a-plane width=".42" height=".004" color="#50ccff" position="0 .08 .01"></a-plane>
+          <a-text value="ENTORNOS DIGITALES" align="center" color="#bfefff" width=".64" position="0 .006 .012"></a-text>
+          <a-text value="INVESTIGACION Y DEFENSA" align="center" color="#58a9d3" width=".40" position="0 -.045 .012"></a-text>
+        </a-entity>
+      </a-entity>
+      <!-- Escudo / núcleo holográfico delante de la mano -->
+      <a-entity id="coreIntro" data-intro position="-.08 -.08 .36" scale="0.01 0.01 0.01">
+        <a-torus color="#57dfff" radius=".086" radius-tubular=".0014" material="shader: flat; opacity: .85; transparent: true"
+          animation="property: rotation; to: 0 360 0; dur: 7000; loop: true; easing: linear"></a-torus>
+        <a-octahedron color="#168bd9" radius=".032" wireframe="true" material="shader: flat; opacity: .9; transparent: true"
+          animation="property: rotation; to: 360 360 0; dur: 6000; loop: true; easing: linear"></a-octahedron>
+      </a-entity>
+    </a-entity>
+  </a-scene>
+  <script>
+  /* EEL CIBERSEGURIDAD AR – arranque automático y diagnóstico de cámara.
+     Solo utiliza recursos locales del proyecto; no captura ni transmite fotogramas. */
+  (() => {
+    'use strict';
+    const el = id => document.getElementById(id);
+    const scene = el('arScene');
+    const target = el('eelTarget');
+    const waiting = el('cameraWait');
+    const failure = el('cameraError');
+    const errorText = el('errorText');
+    const chrome = el('arChrome');
+    const scanPrompt = el('scanPrompt');
+    const retry = el('retryBtn');
+    let system = null;
+    let running = false;
+    let starting = false;
+    let cameraReady = false;
+    let timerIds = [];
+    let attempt = 0;
+
+    const later = (fn,ms) => { const id=setTimeout(fn,ms); timerIds.push(id); };
+    const clearTimers = () => { for (const id of timerIds) clearTimeout(id); timerIds=[]; };
+    const resetIntro = () => {
+      clearTimers();
+      document.querySelectorAll('[data-intro]').forEach(node => {
+        node.removeAttribute('animation__intro');
+        node.setAttribute('scale','0.01 0.01 0.01');
+      });
+    };
+    const reveal = () => {
+      resetIntro();
+      ['coreIntro','titleIntro','p1','p2','p3','p4'].forEach((id,index) => later(() => {
+        if (!running) return;
+        const node=el(id);
+        if (!node) return;
+        node.setAttribute('animation__intro', {
+          property:'scale',from:'0.01 0.01 0.01',to:'1 1 1',dur:540,
+          easing:'easeOutBack',startEvents:'eelReveal'
+        });
+        node.emit('eelReveal');
+      },200+index*260));
+    };
+    target.addEventListener('targetFound',() => {
+      if (!running) return;
+      scanPrompt.hidden=true;
+      reveal();
+    });
+    target.addEventListener('targetLost',() => {
+      if (!running) return;
+      scanPrompt.hidden=false;
+      resetIntro();
+    });
+
+    const stop = async () => {
+      running=false;
+      clearTimers();
+      resetIntro();
+      if (system) { try { await system.stop(); } catch (_) {} }
+    };
+    const fail = async (message) => {
+      attempt += 1;
+      starting=false;
+      cameraReady=false;
+      await stop();
+      waiting.hidden=true;
+      chrome.hidden=true;
+      errorText.textContent=message;
+      failure.hidden=false;
+    };
+    scene.addEventListener('arError', () => {
+      if (!running && !starting) return;
+      void fail('No se pudo abrir la cámara.\nAbrí el enlace directamente en Chrome (no dentro de otra aplicación), comprobá los permisos y probá nuevamente.');
+    });
+    scene.addEventListener('arReady', () => {
+      if (!running) return;
+      cameraReady=true;
+      waiting.hidden=true;
+      failure.hidden=true;
+      chrome.hidden=false;
+      scanPrompt.hidden=false;
+    });
+
+    const markerExists = async () => {
+      const response=await fetch('assets/target.mind',{cache:'no-store'});
+      if (!response.ok) return false;
+      const body=await response.blob();
+      return body.size>100 && !((response.headers.get('content-type')||'').includes('text/html'));
+    };
+    const sceneLoaded = () => new Promise((resolve,reject) => {
+      if (scene.hasLoaded) { resolve();return; }
+      const timeout=setTimeout(() => reject(new Error('No se cargó el motor 3D.')),14000);
+      scene.addEventListener('loaded',() => { clearTimeout(timeout);resolve(); },{once:true});
+    });
+    const withTimeout = (promise,ms) => new Promise((resolve,reject) => {
+      const timeout=setTimeout(() => reject(new Error('La cámara no respondió.')),ms);
+      Promise.resolve(promise).then(value=>{clearTimeout(timeout);resolve(value);},error=>{clearTimeout(timeout);reject(error);});
+    });
+    const start = async () => {
+      if (starting || running) return;
+      const thisAttempt=++attempt;
+      starting=true;
+      cameraReady=false;
+      waiting.hidden=false;
+      failure.hidden=true;
+      chrome.hidden=true;
+      resetIntro();
+      if (!window.isSecureContext || !navigator.mediaDevices?.getUserMedia) {
+        await fail('Este navegador no permite utilizar la cámara desde esta página.\nAbrí el enlace HTTPS directamente en Chrome para Android.');
+        return;
+      }
+      try {
+        if (!await markerExists()) {
+          throw new Error('No se encontró assets/target.mind en GitHub. Subí el archivo .mind dentro de assets y volvé a abrir la página.');
+        }
+        await sceneLoaded();
+        if (thisAttempt!==attempt) return;
+        system=scene.systems['mindar-image-system'];
+        if (!system) throw new Error('No se pudo iniciar MindAR. Revisá los archivos de vendor.');
+        running=true;
+        await withTimeout(system.start(),24000);
+        if (thisAttempt!==attempt) return;
+        // No ocultar la pantalla de preparación hasta recibir arReady de MindAR.
+        // start() por sí solo no garantiza que el navegador ya esté mostrando vídeo.
+        if (!cameraReady) {
+          await withTimeout(new Promise(resolve => {
+            scene.addEventListener('arReady',resolve,{once:true});
+          }),12000);
+        }
+        if (thisAttempt!==attempt) return;
+        if (!cameraReady) throw new Error('La cámara no terminó de iniciarse.');
+      } catch (error) {
+        if (thisAttempt===attempt) {
+          let msg=error?.message || String(error);
+          if (error?.name==='NotAllowedError') msg='Permiso de cámara denegado. Habilitalo en Chrome y volvé a probar.';
+          if (error?.name==='NotFoundError') msg='No se encontró una cámara compatible en este dispositivo.';
+          await fail(msg+'\nSi abriste el enlace desde una aplicación, probá directamente en Google Chrome.');
+        }
+      } finally {
+        if (thisAttempt===attempt) starting=false;
+      }
+    };
+    retry.addEventListener('click',()=>void start());
+    el('exitBtn').addEventListener('click',async () => {
+      attempt++;
+      await stop();
+      starting=false;
+      cameraReady=false;
+      chrome.hidden=true;
+      waiting.hidden=true;
+      errorText.textContent='Cámara cerrada.';
+      failure.hidden=false;
+    });
+    window.addEventListener('pagehide',() => { attempt++;void stop(); });
+    // No hay botón de inicio: solicitar acceso al abrir el sitio, nunca antes del permiso del usuario.
+    void start();
+  })();
+  </script>
+
+</body>
+</html>
